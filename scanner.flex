@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 
 %{
   private String m_accum;
+  private int error_counter = 0;
 
   public static void main(String argv[]) {
     if (argv.length == 0) {
@@ -63,9 +64,23 @@ private Token token(TokenType type, String val) {
 	return new Token(type, val, yyline);
 }
 
-//prints out error message and specifies at what line it found it at 
+//prints out error message and specifies at what line it found it at
 private void error(String msg) {
+  System.out.println("Error: " + msg + " at line " + Integer.toString(yyline));
+  if(error_counter >= 10){
+    System.out.println("Error: Too many errors at line " + Integer.toString(yyline) + ". Exiting program");
+    System.exit(1);
+  }
+
+  error_counter++;
+}
+
+private void error(String msg, boolean exit) {
 	System.out.println("Error: " + msg + " at line " + Integer.toString(yyline));
+  if(exit){
+     System.exit(1);
+  }
+  System.exit(0);
 }
 
 %}
@@ -93,12 +108,12 @@ UNDERSCORE = "_" //underscore character
 "%"  {return token(TokenType.MOD, yytext()); }
 "<"  {return token(TokenType.LT, yytext()); }
 ">"  { return token(TokenType.GT, yytext());  }
-"<="  {return token(TokenType.LE, yytext()); }
+"<=" {return token(TokenType.LE, yytext()); }
 ">=" { return token(TokenType.GE, yytext());  }
-"=" { return token(TokenType.ASSIGN, yytext()); }
+"="  { return token(TokenType.ASSIGN, yytext()); }
 "==" { return token(TokenType.EQTO, yytext());  }
 "!=" { return token(TokenType.NOTEQTO, yytext());  }
-"!" { return token(TokenType.NOT, yytext());  }
+"!"  { return token(TokenType.NOT, yytext());  }
 "&&" { return token(TokenType.AND, yytext());  }
 "||" { return token(TokenType.OR, yytext());  }
 
@@ -111,16 +126,16 @@ UNDERSCORE = "_" //underscore character
 "," { return token(TokenType.COMMA, yytext());  }
 "." { return token(TokenType.DOT, yytext()); }
 
-"true" { return token(TokenType.RWORD, yytext()); }
-"false" { return token(TokenType.RWORD, yytext()); }
-"boolean" { return token(TokenType.RWORD, yytext()); }
-"int" { return token(TokenType.RWORD, yytext()); }
-"void" { return token(TokenType.RWORD, yytext()); }
-"if" { return token(TokenType.RWORD, yytext()); }
-"else" { return token(TokenType.RWORD, yytext()); }
-"while" { return token(TokenType.RWORD, yytext()); }
-"break" { return token(TokenType.RWORD, yytext()); }
-"return" { return token(TokenType.RWORD, yytext()); }
+"true" { return token(TokenType.TRUE, yytext()); }
+"false" { return token(TokenType.FALSE, yytext()); }
+"boolean" { return token(TokenType.BOOL, yytext()); }
+"int" { return token(TokenType.INT, yytext()); }
+"void" { return token(TokenType.VOID, yytext()); }
+"if" { return token(TokenType.IF, yytext()); }
+"else" { return token(TokenType.ELSE, yytext()); }
+"while" { return token(TokenType.WHILE, yytext()); }
+"break" { return token(TokenType.BREAK, yytext()); }
+"return" { return token(TokenType.RETURN, yytext()); }
 
 \s   {/* \s is a special character to match whitespace */}
 
@@ -138,17 +153,49 @@ UNDERSCORE = "_" //underscore character
 }
 
 <STRING>{
-[^\n\"]   { m_accum = m_accum + yytext(); }
-\n        { error("Newline found in string"); }
-"\""      { 
-	yybegin(YYINITIAL);
-	return token(TokenType.STRING, m_accum); 
-}
-"\\\""    { 
-	m_accum = m_accum + "\""; 
-	/* todo add more escape characters */
-}
+  [^\n\"]   { m_accum = m_accum + yytext(); }
+
+  \n        { error("string missing closing quote before newline", true); }
+  \r\n      { error("string missing closing quote before newline", true); }
+  <<EOF>>   { error("string missing closing quote before End Of File", true); }
+
+  "\""      { 
+    yybegin(YYINITIAL);
+    return token(TokenType.STRING, m_accum); 
+  }
+
+  \\b       {
+    m_accum = m_accum + "\\b";
+  }
+
+  \\f       {
+    m_accum = m_accum + "\\f"; 
+  }
+
+  \\t       {
+    m_accum = m_accum + "\\t"; 
+  }
+
+  \\r       {
+    m_accum = m_accum + "\\r"; 
+  }
+
+  \\n       {
+    m_accum = m_accum + "\\n"; 
+  }
+
+  \\\'       {
+    m_accum = m_accum + "\\\'"; 
+  }
+
+  \\\"       {
+    m_accum = m_accum + "\\\""; 
+  }
+
+  \\\\       {
+    m_accum = m_accum + "\\\\"; 
+  }
+
 }
 
 [^]  { error("Unknown character '" + yytext() + "'"); }
-

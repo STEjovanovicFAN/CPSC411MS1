@@ -1,0 +1,15 @@
+Script started on 2020-02-07 11:41:46-07:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="80" LINES="24"]
+bash-5.0$ jflex scanner.flex ; javac *.java ; java Yylex tests/test1.txt 
+Reading "scanner.flex"
+Constructing NFA : 188 states in NFA
+Converting NFA to DFA : 
+............................................................................................
+100 states before minimization, 89 states in minimized DFA
+Old file "Yylex.java" saved as "Yylex.java~"
+Writing code to "Yylex.java"
+Token(GE, 1, >=)
+null
+bash-5.0$ exit
+exit
+
+Script done on 2020-02-07 11:42:20-07:00 [COMMAND_EXIT_CODE="0"]

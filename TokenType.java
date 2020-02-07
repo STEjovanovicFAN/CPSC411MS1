@@ -23,12 +23,24 @@ public enum TokenType {
     LBRACE,
     RBRACE,
 
-    //
+    //Symbols 
     SEMICOLON,
     COMMA,
     DOT,
 
-    RWORD,
+    //Reserved words
+    TRUE,
+    FALSE, 
+    BOOL,
+    INT, 
+    VOID, 
+    IF,
+    ELSE, 
+    WHILE,
+    BREAK,
+    RETURN,
+
+    //Digits
     NUMBER,
 
 	BEGIN,
